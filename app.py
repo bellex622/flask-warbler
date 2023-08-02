@@ -148,7 +148,7 @@ def list_users():
 
     Can take a 'q' param in querystring to search by that username.
     """
-
+    form = CsrfForm()
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -160,7 +160,7 @@ def list_users():
     else:
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users)
+    return render_template('users/index.html', users=users, form=form)
 
 
 @app.get('/users/<int:user_id>')
@@ -195,12 +195,13 @@ def show_following(user_id):
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
+    form = CsrfForm()
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    return render_template('users/followers.html', user=user, form=form)
 
 
 @app.post('/users/follow/<int:follow_id>')
