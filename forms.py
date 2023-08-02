@@ -45,3 +45,25 @@ class LoginForm(FlaskForm):
         'Password',
         validators=[InputRequired(), Length(min=6, max=50)],
     )
+
+
+# class ProfileEditForm(FlaskForm):
+#     """Profile edit form."""
+#     email = StringField(
+#         "Email",
+#         validators=[InputRequired(),Email(), Length(max=50)])
+
+#     username = StringField(
+#         "Username",
+#         validators=[InputRequired(), Length(max=20)])
+
+
+
+
+
+
+
+
+
+class CsrfForm(FlaskForm):
+    """Form just for CSRF Protection"""

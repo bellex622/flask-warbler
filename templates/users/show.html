@@ -1,4 +1,10 @@
 {% extends 'users/detail.html' %}
+
+{% block header_image %}
+<img src="{{user.header_image_url}}" alt="" id="header_img">
+{% endblock %}
+
+
 {% block user_details %}
 <div class="col-sm-6">
   <ul class="list-group" id="messages">
