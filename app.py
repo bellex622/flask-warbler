@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm,CsrfForm
+from forms import UserAddForm, LoginForm, MessageForm,CsrfForm,ProfileEditForm
 from models import db, connect_db, User, Message
 from werkzeug.exceptions import Unauthorized
 
@@ -20,6 +20,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 connect_db(app)
 
@@ -63,11 +64,15 @@ def signup():
     If the there already is a user with that username: flash message
     and re-present form.
     """
+    print("session--------------->", session)
 
     if CURR_USER_KEY in session:
         return redirect(f"/users/{session[CURR_USER_KEY]}")
 
     do_logout()
+
+
+
 
     form = UserAddForm()
 
@@ -246,7 +251,38 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    return render_template('edit.html')
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+
+
+    user = User.query.get_or_404(g.user.id)
+    original_username = user.username
+    form = ProfileEditForm(obj=user)
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email=form.email.data
+        user.image_url=form.image_url.data
+        user.header_image_url=form.header_image_url.data
+        user.bio = form.bio.data
+
+
+        if User.authenticate(original_username, form.password.data):
+
+            db.session.commit()
+            print("user is authenticated here")
+            return redirect(f'/users/{user.id}')
+
+        else:
+            flash('Invalid password!')
+            print("this is invalid password")
+            return render_template('users/edit.html',form=form)
+
+    print("submit is not validated")
+
+    return render_template('users/edit.html',form=form)
 
 
 @app.post('/users/delete')

@@ -20,7 +20,7 @@
         <p>To confirm changes, enter your password:</p>
 
         {% if form.password.errors %}
-          {% for error in form.password.errors %}
+          {% for error in edit_form.password.errors %}
             <span class="text-danger">
             {{ error }}
           </span>

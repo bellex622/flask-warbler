@@ -47,21 +47,35 @@ class LoginForm(FlaskForm):
     )
 
 
-# class ProfileEditForm(FlaskForm):
-#     """Profile edit form."""
-#     email = StringField(
-#         "Email",
-#         validators=[InputRequired(),Email(), Length(max=50)])
+class ProfileEditForm(FlaskForm):
+    """Profile edit form."""
 
-#     username = StringField(
-#         "Username",
-#         validators=[InputRequired(), Length(max=20)])
+    username = StringField(
+        "Username",
+        validators=[InputRequired(), Length(max=20)])
 
+    email = StringField(
+        "Email",
+        validators=[InputRequired(),Email(), Length(max=50)])
 
+    image_url = StringField(
+        'Image URL',
+        validators=[Optional(), URL(), Length(max=255)]
+    )
 
+    header_image_url = StringField(
+        'Header Image URL',
+        validators=[Optional(), URL(), Length(max=255)]
+    )
 
+    bio = StringField(
+        'Bio',
+        validators=[Optional()],
+    )
 
-
+    password = PasswordField(
+        "Password",
+        validators=[InputRequired(), Length(min=6, max=100)])
 
 
 
