@@ -27,7 +27,10 @@ connect_db(app)
 
 ##############################################################################
 # User signup/login/logout
-
+@app.before_request
+def add_csrf_to_g():
+    """Adds csrfForm to global"""
+    g.CsrfForm = CsrfForm()
 
 @app.before_request
 def add_user_to_g():
@@ -126,9 +129,8 @@ def login():
 def logout():
     """Handle logout of user and redirect to homepage."""
 
-    form = CsrfForm()
     print("logout function**********")
-    if form.validate_on_submit():
+    if g.CsrfForm.validate_on_submit():
         do_logout()
 
         return redirect('/')
@@ -153,7 +155,6 @@ def list_users():
 
     Can take a 'q' param in querystring to search by that username.
     """
-    form = CsrfForm()
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -165,14 +166,12 @@ def list_users():
     else:
         users = User.query.filter(User.username.like(f"%{search}%")).all()
 
-    return render_template('users/index.html', users=users, form=form)
+    return render_template('users/index.html', users=users)
 
 
 @app.get('/users/<int:user_id>')
 def show_user(user_id):
     """Show user profile."""
-
-    form = CsrfForm()
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -180,13 +179,12 @@ def show_user(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    return render_template('users/show.html', user=user, form=form)
+    return render_template('users/show.html', user=user)
 
 
 @app.get('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
-    form = CsrfForm()
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -194,19 +192,19 @@ def show_following(user_id):
 
     user = User.query.get_or_404(user_id)
     # breakpoint()
-    return render_template('users/following.html', user=user,form=form)
+    return render_template('users/following.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
-    form = CsrfForm()
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user, form=form)
+    return render_template('users/followers.html', user=user)
 
 
 @app.post('/users/follow/<int:follow_id>')
@@ -372,9 +370,8 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of self & followed_users
     """
-
-    form = CsrfForm()
-
+    user = User.query.get_or_404(g.user.id)
+    following_ids = [user.id for user in ]
     if g.user:
         messages = (Message
                     .query
@@ -382,7 +379,7 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages, form=form)
+        return render_template('home.html', messages=messages)
 
     else:
         return render_template('home-anon.html')
