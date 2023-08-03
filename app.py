@@ -31,6 +31,7 @@ connect_db(app)
 def add_csrf_to_g():
     """Adds csrfForm to global"""
     g.CsrfForm = CsrfForm()
+    #//TODO: snakecase change
 
 @app.before_request
 def add_user_to_g():
@@ -73,9 +74,6 @@ def signup():
         return redirect(f"/users/{session[CURR_USER_KEY]}")
 
     do_logout()
-
-
-
 
     form = UserAddForm()
 
@@ -128,7 +126,7 @@ def login():
 @app.post('/logout')
 def logout():
     """Handle logout of user and redirect to homepage."""
-
+# add more security need to be someone log in and csrf form validates....
     print("logout function**********")
     if g.CsrfForm.validate_on_submit():
         do_logout()
@@ -247,6 +245,7 @@ def stop_following(follow_id):
 
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
+    #//TODO: change name of view function bc it also edits
     """Update profile for current user."""
 
     if not g.user:
@@ -255,18 +254,19 @@ def profile():
 
 
 
-    user = User.query.get_or_404(g.user.id)
-    original_username = user.username
+    user = User.query.get_or_404(g.user.id) # you dont need to do this, user=g.user
+    original_username = user.username #//TODO: no need for this after changes
     form = ProfileEditForm(obj=user)
 
     if form.validate_on_submit():
+
         user.username = form.username.data
         user.email=form.email.data
         user.image_url=form.image_url.data
         user.header_image_url=form.header_image_url.data
         user.bio = form.bio.data
-
-
+        #//TODO: add logic about default imgs if they edit to empty 265/266
+        #//TODO: put authenticate above , if no authenticate we dont want to even take their info
         if User.authenticate(original_username, form.password.data):
 
             db.session.commit()
@@ -289,7 +289,7 @@ def delete_user():
 
     Redirect to signup page.
     """
-
+    #TODO: add csrfprotection here and in html hidden tags
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
