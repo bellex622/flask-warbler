@@ -53,15 +53,17 @@
         </a>
         <div class="message-area">
           <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
-          <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y')
-            }}</span>
+          <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y')}}</span>
           <p>{{ msg.text }}</p>
 
           {%if msg.user != user%}
 
           <form action="/messages/{{msg.id}}/like" method="POST">
+            {{ g.csrf_form.hidden_tag() }}
+            <input type="hidden" name="come_from" value="/">
             <button type="submit" id="like_button" class="like">
-              <i class="bi {{ 'bi-star-fill' if msg in user.liked_messages else 'bi-star' }}"></i>
+              <i
+                class="bi {{ 'bi-star-fill' if msg in user.liked_messages else 'bi-star' }}"></i>
             </button>
           </form>
 

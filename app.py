@@ -380,35 +380,49 @@ def homepage():
     else:
         return render_template('home-anon.html')
 
-##############################################################################
-#handle likes
+############################handle likes#####################################
 @app.post('/messages/<int:message_id>/like')
 def add_like_or_unlike(message_id):
-    "handle user like/unlike"
+    "handle user like/unlike;redirect to homepage"
+
+
+    if not (g.user and g.csrf_form.validate_on_submit()):
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
     user = g.user
     liked_messages = user.liked_messages
     message = Message.query.get_or_404(message_id)
-
+    come_from = request.form["come_from"]
 
     if message not in liked_messages:
-        user.liked_messages.append(message)
+        if message.user != user:
+            user.liked_messages.append(message)
 
     else:
         user.liked_messages.remove(message)
 
     db.session.commit()
 
-    return redirect('/')
+    return redirect(come_from)
 
 
 @app.get('/users/<int:user_id>/likes')
 def show_liked_messages(user_id):
 
-    user = g.user
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
     liked_messages = user.liked_messages
 
-    return render_template('messages/liked_list.html', messages=liked_messages)
+    return render_template(
+        'messages/liked_list2.html',
+        messages=liked_messages,
+        user=user
+    )
+
 
 
 

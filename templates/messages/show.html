@@ -43,11 +43,17 @@
           </div>
           <p class="single-message">{{ message.text }}</p>
 
-          <form action="/messages/like" method="POST">
-            <button type="submit" name="action" value="like">
-              &#9734;
+          {%if message.user != g.user%}
+
+          <form action="/messages/{{message.id}}/like" method="POST">
+            {{ g.csrf_form.hidden_tag() }}
+            <input type="hidden" name="come_from" value="/messages/{{message.id}}">
+            <button type="submit">
+              <i class="bi {{ 'bi-star-fill' if message in g.user.liked_messages else 'bi-star' }}"></i>
             </button>
           </form>
+
+          {% endif %}
 
           <span class="text-muted">
               {{ message.timestamp.strftime('%d %B %Y') }}

@@ -187,6 +187,7 @@ class Message(db.Model):
 
 
 class UserLikedMessage(db.Model):
+    #change class to likes
     "Joint table between user and messages for like"
 
 
