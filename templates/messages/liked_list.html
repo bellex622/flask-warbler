@@ -60,10 +60,9 @@
         </div>
       </li>
 
-
         <form action="/messages/{{msg.id}}/like" method="POST">
-          <button type="submit" id="like_button" class="like">
-            <i class="bi {{ 'bi-star-fill' if msg in user.liked_messages else 'bi-star' }}"></i>
+          <button type="submit" name="action" value="like">
+            <i class="bi {{ 'bi-star-fill' if msg in messages else 'bi-star' }}"></i>
           </button>
         </form>
 

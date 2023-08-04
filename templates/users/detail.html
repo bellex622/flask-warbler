@@ -46,7 +46,11 @@
           </li>
           <li class="stat">
             <p class="small">Likes</p>
-            <h4>TBD</h4>
+            <h4>
+              <a href="/users/{{ user.id }}/likes">
+              {{user.liked_messages | length}}
+              </a>
+            </h4>
           </li>
 
           <li class="ms-auto">
@@ -55,6 +59,7 @@
               Edit Profile
             </a>
             <form method="POST" action="/users/delete">
+              {{ g.csrf_form.hidden_tag() }}
               <button class="btn btn-outline-danger ms-2">
                 Delete Profile
               </button>

@@ -6,7 +6,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm,CsrfForm,ProfileEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, UserLikedMessage
 from werkzeug.exceptions import Unauthorized
 
 load_dotenv()
@@ -30,8 +30,8 @@ connect_db(app)
 @app.before_request
 def add_csrf_to_g():
     """Adds csrfForm to global"""
-    g.CsrfForm = CsrfForm()
-    #//TODO: snakecase change
+    g.csrf_form = CsrfForm()
+
 
 @app.before_request
 def add_user_to_g():
@@ -126,9 +126,8 @@ def login():
 @app.post('/logout')
 def logout():
     """Handle logout of user and redirect to homepage."""
-# add more security need to be someone log in and csrf form validates....
-    print("logout function**********")
-    if g.CsrfForm.validate_on_submit():
+
+    if g.user and g.csrf_form.validate_on_submit():
         do_logout()
 
         return redirect('/')
@@ -244,8 +243,7 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
-    #//TODO: change name of view function bc it also edits
+def show_profile_and_edit():
     """Update profile for current user."""
 
     if not g.user:
@@ -254,20 +252,17 @@ def profile():
 
 
 
-    user = User.query.get_or_404(g.user.id) # you dont need to do this, user=g.user
-    original_username = user.username #//TODO: no need for this after changes
+    user = g.user
     form = ProfileEditForm(obj=user)
 
     if form.validate_on_submit():
 
-        user.username = form.username.data
-        user.email=form.email.data
-        user.image_url=form.image_url.data
-        user.header_image_url=form.header_image_url.data
-        user.bio = form.bio.data
-        #//TODO: add logic about default imgs if they edit to empty 265/266
-        #//TODO: put authenticate above , if no authenticate we dont want to even take their info
-        if User.authenticate(original_username, form.password.data):
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email=form.email.data
+            user.image_url=form.image_url.data or user.image_url
+            user.header_image_url=form.header_image_url.data or user.header_image_url
+            user.bio = form.bio.data
 
             db.session.commit()
             print("user is authenticated here")
@@ -289,7 +284,6 @@ def delete_user():
 
     Redirect to signup page.
     """
-    #TODO: add csrfprotection here and in html hidden tags
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -381,12 +375,76 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, user=user)
 
     else:
         return render_template('home-anon.html')
 
+##############################################################################
+#handle likes
+@app.post('/messages/<int:message_id>/like')
+def add_like_or_unlike(message_id):
+    "handle user like/unlike"
 
+    user = g.user
+    liked_messages = user.liked_messages
+    message = Message.query.get_or_404(message_id)
+
+
+    if message not in liked_messages:
+        user.liked_messages.append(message)
+
+    else:
+        user.liked_messages.remove(message)
+
+    db.session.commit()
+
+    return redirect('/')
+
+
+@app.get('/users/<int:user_id>/likes')
+def show_liked_messages(user_id):
+
+    user = g.user
+    liked_messages = user.liked_messages
+
+    return render_template('messages/liked_list.html', messages=liked_messages)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################
 @app.after_request
 def add_header(response):
     """Add non-caching headers on every request."""

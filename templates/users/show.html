@@ -15,19 +15,23 @@
       <a href="/messages/{{ message.id }}" class="message-link"></a>
 
       <a href="/users/{{ user.id }}">
-        <img src="{{ user.image_url }}"
-             alt="user image"
-             class="timeline-image">
+        <img src="{{ user.image_url }}" alt="user image" class="timeline-image">
       </a>
 
       <div class="message-area">
         <a href="/users/{{ user.id }}">@{{ user.username }}</a>
         <span class="text-muted">
-              {{ message.timestamp.strftime('%d %B %Y') }}
-            </span>
+          {{ message.timestamp.strftime('%d %B %Y') }}
+        </span>
         <p>{{ message.text }}</p>
+        <form action="/messages/{{message.id}}/like" method="POST">
+          <button type="submit" id="like_button">
+            <i class="bi {{ 'bi-star-fill' if message in g.user.liked_messages else 'bi-star' }}"></i>
+          </button>
+        </form>
       </div>
     </li>
+
 
     {% endfor %}
 
