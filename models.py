@@ -187,6 +187,9 @@ class Message(db.Model):
 
 
 class UserLikedMessage(db.Model):
+    "Joint table between user and messages for like"
+
+
     __tablename__ = 'users_liked_messages'
 
     id = db.Column(
