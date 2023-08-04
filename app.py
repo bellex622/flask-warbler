@@ -40,9 +40,12 @@ def add_user_to_g():
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
 
+        if not g.user:
+            del session[CURR_USER_KEY]
+
     else:
         g.user = None
-
+        
 
 def do_login(user):
     """Log in user."""
